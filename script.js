@@ -1,8 +1,31 @@
+// Инициализация Telegram SDK
 const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
 
-// 1. СЛОВАРЬ ПЕРЕВОДОВ
+// Функция, которая сработает ПЕРВОЙ при загрузке
+function initApp() {
+    tg.ready();
+    tg.expand();
+    
+    // Загружаем сохраненные настройки
+    const saved = JSON.parse(localStorage.getItem('split_it_v2'));
+    if (saved) {
+        if (document.getElementById('langSel')) document.getElementById('langSel').value = saved.lang || 'RU';
+        if (document.getElementById('baseCurr')) document.getElementById('baseCurr').value = saved.base || 'KZT';
+        if (document.getElementById('totalAmount')) document.getElementById('totalAmount').value = saved.cafe || '';
+    }
+    
+    // Принудительно вызываем перевод при старте
+    changeLang();
+    calculateAll();
+}
+
+// Запускаем инициализацию
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
+
 const translations = {
     RU: {
         'tab-cafe': 'Кафе', 'tab-rent': 'Аренда', 'tab-travel': 'Поездка',
@@ -22,124 +45,137 @@ const translations = {
     }
 };
 
-// 2. КУРСЫ ВАЛЮТ (относительно USD)
 const rates = { KZT: 445, USD: 1, EUR: 0.92, RUB: 92 };
 
-// Переключение вкладок
-function openTab(tabId) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    document.getElementById('tab-' + tabId).classList.add('active');
-}
-
-// Смена языка
 function changeLang() {
-    const lang = document.getElementById('langSel').value;
+    const langSelect = document.getElementById('langSel');
+    if (!langSelect) return;
+    
+    const lang = langSelect.value;
     const t = translations[lang];
+    
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (t[key]) el.innerText = t[key];
     });
+    saveData();
 }
 
-// Добавление участников
+function openTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    
+    const targetTab = document.getElementById(tabId);
+    const targetBtn = document.getElementById('tab-' + tabId);
+    
+    if (targetTab) targetTab.classList.add('active');
+    if (targetBtn) targetBtn.classList.add('active');
+}
+
 function addPerson(containerId, type) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
     const div = document.createElement('div');
     div.className = 'participant-row';
-    div.innerHTML = `<input type="text" placeholder="..." class="p-input" style="margin-bottom:8px;">`;
-    document.getElementById(containerId).appendChild(div);
+    div.innerHTML = `<input type="text" placeholder="..." class="p-input" style="margin-bottom:8px; width:100%; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 12px; color: white;">`;
+    container.appendChild(div);
     calculateAll();
 }
 
-// Добавление расходов (Поездка)
 function addExpense() {
+    const container = document.getElementById('travelExpenses');
+    if (!container) return;
+    
     const div = document.createElement('div');
     div.className = 'settings-grid expense-row';
+    div.style.display = 'grid';
+    div.style.gridTemplateColumns = '1fr 1fr';
+    div.style.gap = '10px';
     div.style.marginBottom = '10px';
     div.innerHTML = `
-        <input type="number" class="t-exp-val" placeholder="0.00" oninput="calculateAll()">
-        <select class="t-exp-cur" onchange="calculateAll()">
+        <input type="number" class="t-exp-val" placeholder="0.00" oninput="calculateAll()" style="width:100%;">
+        <select class="t-exp-cur" onchange="calculateAll()" style="width:100%;">
             <option value="KZT">₸</option><option value="USD">$</option>
             <option value="EUR">€</option><option value="RUB">₽</option>
         </select>
     `;
-    document.getElementById('travelExpenses').appendChild(div);
+    container.appendChild(div);
 }
 
-// УНИВЕРСАЛЬНЫЙ РАСЧЕТ
 function calculateAll() {
-    const base = document.getElementById('baseCurr').value;
+    const baseEl = document.getElementById('baseCurr');
+    if (!baseEl) return;
+    
+    const base = baseEl.value;
     const signs = { KZT: '₸', USD: '$', EUR: '€', RUB: '₽' };
     const baseSign = signs[base];
 
-    // Конвертер
     const toBase = (amt, from) => {
         if (from === base) return amt;
         const inUSD = amt / rates[from];
         return inUSD * rates[base];
     };
 
-    // 1. Кафе
-    let cAmt = parseFloat(document.getElementById('totalAmount').value) || 0;
-    if (document.getElementById('serviceTax').checked) cAmt *= 1.1;
-    let cBase = toBase(cAmt, document.getElementById('currencySelect').value);
-    let cCount = document.getElementById('participantsList').children.length;
-    document.getElementById('valCafe').innerText = (cCount > 0 ? (cBase / cCount).toFixed(2) : "0") + " " + baseSign;
+    // Кафе
+    const totalAmountEl = document.getElementById('totalAmount');
+    const currencySelectEl = document.getElementById('currencySelect');
+    const participantsListEl = document.getElementById('participantsList');
+    
+    if (totalAmountEl && currencySelectEl && participantsListEl) {
+        let cAmt = parseFloat(totalAmountEl.value) || 0;
+        if (document.getElementById('serviceTax').checked) cAmt *= 1.1;
+        let cBase = toBase(cAmt, currencySelectEl.value);
+        let cCount = participantsListEl.children.length;
+        document.getElementById('valCafe').innerText = (cCount > 0 ? (cBase / cCount).toFixed(2) : "0") + " " + baseSign;
+    }
 
-    // 2. Аренда
-    let rAmt = parseFloat(document.getElementById('rentTotal').value) || 0;
-    let rBase = toBase(rAmt, "KZT"); // Аренда обычно в локальной валюте
-    let rCount = document.getElementById('rentParticipants').children.length;
-    document.getElementById('valRent').innerText = (rCount > 0 ? (rBase / rCount).toFixed(2) : "0") + " " + baseSign;
+    // Аренда
+    const rentTotalEl = document.getElementById('rentTotal');
+    const rentParticipantsEl = document.getElementById('rentParticipants');
+    if (rentTotalEl && rentParticipantsEl) {
+        let rAmt = parseFloat(rentTotalEl.value) || 0;
+        let rCount = rentParticipantsEl.children.length;
+        document.getElementById('valRent').innerText = (rCount > 0 ? (rAmt / rCount).toFixed(2) : "0") + " " + baseSign;
+    }
 
-    // 3. Поездка
-    let tTotalBase = 0;
-    document.querySelectorAll('.expense-row').forEach(row => {
-        let v = parseFloat(row.querySelector('.t-exp-val').value) || 0;
-        let c = row.querySelector('.t-exp-cur').value;
-        tTotalBase += toBase(v, c);
-    });
-    let tCount = document.getElementById('travelParticipants').children.length;
-    document.getElementById('valTravel').innerText = (tCount > 0 ? (tTotalBase / tCount).toFixed(2) : "0") + " " + baseSign;
-
+    // Поездка
+    const travelParticipantsEl = document.getElementById('travelParticipants');
+    if (travelParticipantsEl) {
+        let tTotalBase = 0;
+        document.querySelectorAll('.expense-row').forEach(row => {
+            let v = parseFloat(row.querySelector('.t-exp-val').value) || 0;
+            let c = row.querySelector('.t-exp-cur').value;
+            tTotalBase += toBase(v, c);
+        });
+        let tCount = travelParticipantsEl.children.length;
+        document.getElementById('valTravel').innerText = (tCount > 0 ? (tTotalBase / tCount).toFixed(2) : "0") + " " + baseSign;
+    }
     saveData();
 }
 
 function openCamera() {
-    tg.showScanQrPopup({ text: "Сфотографируйте чек" }, (text) => {
-        document.getElementById('totalAmount').value = 19645;
-        calculateAll();
-        return true; 
+    // ВАЖНО: Telegram камера работает только через этот метод
+    tg.showScanQrPopup({ text: "Сфотографируйте чек" }, function(text) {
+        // Попробуем найти сумму в тексте (упрощенно)
+        const amount = text.match(/\d+[\.,]\d+/);
+        if (amount) {
+            document.getElementById('totalAmount').value = amount[0].replace(',', '.');
+            calculateAll();
+        }
+        tg.closeScanQrPopup();
+        return true;
     });
-}
-
-function resetAll() {
-    if(confirm("Очистить все данные?")) {
-        localStorage.clear();
-        location.reload();
-    }
 }
 
 function saveData() {
     const state = {
-        cafe: document.getElementById('totalAmount').value,
-        lang: document.getElementById('langSel').value,
-        base: document.getElementById('baseCurr').value
+        cafe: document.getElementById('totalAmount')?.value || '',
+        lang: document.getElementById('langSel')?.value || 'RU',
+        base: document.getElementById('baseCurr')?.value || 'KZT'
     };
     localStorage.setItem('split_it_v2', JSON.stringify(state));
 }
-
-// Загрузка сохраненного
-window.onload = () => {
-    const saved = JSON.parse(localStorage.getItem('split_it_v2'));
-    if (saved) {
-        document.getElementById('langSel').value = saved.lang || 'RU';
-        document.getElementById('baseCurr').value = saved.base || 'KZT';
-        document.getElementById('totalAmount').value = saved.cafe || '';
-        changeLang();
-    }
-};
 
 function share(type) {
     const val = document.getElementById('val' + type.charAt(0).toUpperCase() + type.slice(1)).innerText;
