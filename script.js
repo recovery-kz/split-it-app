@@ -1,51 +1,48 @@
-const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
-
-const totalInput = document.getElementById('totalAmount');
-const participantsList = document.getElementById('participantsList');
-const addPersonBtn = document.getElementById('addPersonBtn');
-const resultArea = document.getElementById('resultArea');
-const perPersonDisplay = document.getElementById('perPersonAmount');
-
-let count = 0;
-
-function update() {
-    const total = parseFloat(totalInput.value) || 0;
-    if (total > 0 && count > 0) {
-        // Форматируем число для красоты
-        const perPerson = (total / count).toFixed(2);
-        perPersonDisplay.innerText = perPerson + " ₸";
-        resultArea.style.display = 'block';
-    } else {
-        resultArea.style.display = 'none';
-    }
+function openTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    event.currentTarget.classList.add('active');
 }
 
-addPersonBtn.addEventListener('click', () => {
-    count++;
-    const item = document.createElement('div');
-    item.className = 'participant-item';
-    item.innerHTML = `<input type="text" placeholder="Имя участника" style="font-size: 16px; border-bottom: 1px solid #eee; margin-bottom: 10px; width: 100%;">`;
-    participantsList.appendChild(item);
-    update();
+let travelExpenses = [];
+
+document.getElementById('addExpenseBtn').addEventListener('click', () => {
+    const expenseId = Date.now();
+    const div = document.createElement('div');
+    div.className = 'expense-item';
+    div.innerHTML = `
+        <input type="text" placeholder="За что (Аренда, ужин...)" style="font-size:14px; margin-bottom:5px;">
+        <div style="display:flex; gap:10px;">
+            <input type="number" class="exp-amt" data-id="${expenseId}" placeholder="Сумма" style="font-size:18px;">
+            <select class="exp-curr" data-id="${expenseId}">
+                <option value="KZT">₸</option>
+                <option value="USD">$</option>
+                <option value="EUR">€</option>
+            </select>
+        </div>
+    `;
+    document.getElementById('expensesList').appendChild(div);
+    
+    div.querySelectorAll('input, select').forEach(el => {
+        el.addEventListener('input', calculateTravel);
+    });
 });
 
-totalInput.addEventListener('input', update);
+function calculateTravel() {
+    let totalKZT = 0;
+    const amts = document.querySelectorAll('.exp-amt');
+    const currs = document.querySelectorAll('.exp-curr');
+    
+    amts.forEach((amt, i) => {
+        const val = parseFloat(amt.value) || 0;
+        const curr = currs[i].value;
+        const rate = curr === 'KZT' ? 1 : 1 / rates[curr]; // Берем из нашего API курсов
+        totalKZT += val / rate;
+    });
 
-document.getElementById('shareBtn').addEventListener('click', () => {
-    const total = totalInput.value;
-    const perPerson = perPersonDisplay.innerText;
-    
-    // Формируем текст сообщения
-    const message = `💸 Счет разделен!\n\n💰 Общая сумма: ${total} ₸\n👥 Участников: ${count}\n👉 На каждого: ${perPerson}\n\nПосчитано через @MyCoolSplitBot`;
-    
-    // Кодируем текст для URL
-    const encodedText = encodeURIComponent(message);
-    
-    // Используем нативный метод пересылки Telegram
-    // Это откроет список чатов, чтобы пользователь выбрал, куда отправить результат
-    const shareUrl = `https://t.me/share/url?url=${encodedText}`;
-    
-    tg.openTelegramLink(shareUrl);
-});
+    if (totalKZT > 0 && count > 0) {
+        document.getElementById('travelPerPerson').innerText = Math.round(totalKZT / count) + " ₸";
+        document.getElementById('travelResult').style.display = 'block';
+    }
+}
