@@ -3,66 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Split It Global</title>
+    <title>Split It Premium</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
-        <div class="global-settings">
-            <select id="langSwitch" onchange="changeLang()">
-                <option value="ru">RU</option>
-                <option value="en">EN</option>
-            </select>
-            <select id="baseCurrency" onchange="calculateAll()">
-                <option value="KZT">Base: ₸</option>
-                <option value="USD">Base: $</option>
-                <option value="EUR">Base: €</option>
-                <option value="RUB">Base: ₽</option>
-            </select>
-            <button class="reset-btn" onclick="resetApp()">🔄</button>
+        <div class="top-bar">
+            <select id="langSel"><option>RU</option></select>
+            <select id="baseCurr"><option>Base: ₸</option></select>
+            <button class="icon-btn">🔄</button>
         </div>
 
         <div class="tabs">
-            <button class="tab-btn active" id="t-cafe" onclick="openTab('cafe')">Кафе</button>
-            <button class="tab-btn" id="t-rent" onclick="openTab('rent')">Аренда</button>
-            <button class="tab-btn" id="t-travel" onclick="openTab('travel')">Поездка</button>
+            <button class="tab-btn active" onclick="openTab('cafe')">Кафе</button>
+            <button class="tab-btn" onclick="openTab('rent')">Аренда</button>
+            <button class="tab-btn" onclick="openTab('travel')">Поездка</button>
         </div>
 
         <div id="cafe" class="tab-content active">
-            <div class="input-group">
-                <label id="l-sum">Сумма счета</label>
-                <div class="ocr-wrapper">
-                    <input type="number" id="totalAmount" placeholder="0.00">
-                    <label for="ocr-input" class="ocr-btn">📷</label>
-                    <input type="file" id="ocr-input" accept="image/*" style="display:none" onchange="scanReceipt(this)">
-                </div>
+            <label>СУММА СЧЕТА</label>
+            <div class="input-with-icon">
+                <input type="number" id="totalAmount" placeholder="0.00" inputmode="decimal">
+                <button class="cam-btn" onclick="openCamera()">📷</button>
             </div>
-            <div id="receiptPreview"></div> <div class="settings-grid">
-                <div class="input-group">
-                    <label id="l-curr">Валюта чека</label>
-                    <select id="currencySelect" onchange="calculateAll()">
+            
+            <div id="photoPreview" style="display:none; margin-bottom:15px;">
+                <img id="capturedPhoto" src="" style="width:100%; border-radius:12px; border:1px solid var(--accent);">
+                <p id="scanStatus" style="font-size:12px; color:var(--accent); text-align:center;">Сканирование...</p>
+            </div>
+
+            <div class="settings-grid">
+                <div>
+                    <label>ВАЛЮТА ЧЕКА</label>
+                    <select id="currencySelect">
                         <option value="KZT">₸</option>
                         <option value="USD">$</option>
-                        <option value="EUR">€</option>
-                        <option value="RUB">₽</option>
                     </select>
                 </div>
-                <div class="input-group">
-                    <label id="l-tax">Сервис 10%</label>
-                    <label class="switch"><input type="checkbox" id="serviceTax" onchange="calculateAll()"><span class="slider"></span></label>
+                <div>
+                    <label>СЕРВИС 10%</label>
+                    <label class="switch">
+                        <input type="checkbox" id="serviceTax">
+                        <span class="slider"></span>
+                    </label>
                 </div>
             </div>
+
             <div id="participantsList"></div>
-            <button class="secondary-btn" id="b-add-p" onclick="addParticipant('participantsList')">+ Человек</button>
-            <div class="result-area">
-                <div class="res-line"><span id="l-per">На каждого:</span> <span id="valCafe">0</span></div>
-                <button class="main-btn" id="b-share" onclick="share('cafe')">Поделиться</button>
+            <button class="secondary-btn" onclick="addPerson('participantsList', 'cafe')">+ Человек</button>
+
+            <div class="result-card">
+                <div class="res-line">
+                    <span style="color:var(--hint)">На каждого:</span>
+                    <span class="result-val" id="valCafe">0</span>
+                </div>
+                <button class="main-btn" onclick="share('cafe')">Поделиться</button>
             </div>
         </div>
 
+        <div id="rent" class="tab-content">
+            <label>ОБЩАЯ СУММА (АРЕНДА + КОМ)</label>
+            <input type="number" id="rentTotal" placeholder="0.00" oninput="calculateRent()">
+            <div id="rentParticipants"></div>
+            <button class="secondary-btn" onclick="addPerson('rentParticipants', 'rent')">+ Жилец</button>
+            <div class="result-card">
+                <div class="res-line">
+                    <span style="color:var(--hint)">С человека:</span>
+                    <span class="result-val" id="valRent">0</span>
+                </div>
+                <button class="main-btn" onclick="share('rent')">Поделиться</button>
+            </div>
         </div>
+
+        <div id="travel" class="tab-content">
+            <label>НАЗВАНИЕ ПОЕЗДКИ</label>
+            <input type="text" placeholder="Напр: Грузия 2026">
+            <div id="travelExpenses"></div>
+            <button class="secondary-btn" onclick="addExpense()">+ Расход</button>
+            <div id="travelParticipants"></div>
+            <button class="secondary-btn" onclick="addPerson('travelParticipants', 'travel')">+ Участник</button>
+            <div class="result-card">
+                <div class="res-line">
+                    <span style="color:var(--hint)">Итого:</span>
+                    <span class="result-val" id="valTravel">0</span>
+                </div>
+                <button class="main-btn" onclick="share('travel')">Поделиться</button>
+            </div>
+        </div>
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
