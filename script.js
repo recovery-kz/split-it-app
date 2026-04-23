@@ -4,29 +4,26 @@ const translations = {
     RU: {
         'tab-cafe': 'Кафе', 'tab-rent': 'Аренда', 'tab-travel': 'Поездка',
         'lbl-total': 'СУММА СЧЕТА', 'lbl-curr': 'ВАЛЮТА', 'lbl-service': 'СЕРВИС 10%',
-        'lbl-per-person': 'На каждого:', 'btn-add-p': '+ Человек', 'btn-share': 'Поделиться',
-        'lbl-rent-total': 'АРЕНДА + КОММУНАЛКА', 'lbl-per-rent': 'С человека:', 'btn-add-r': '+ Жилец',
-        'lbl-trip-name': 'НАЗВАНИЕ ПОЕЗДКИ', 'btn-add-ex': '+ Расход (Обед, Такси...)', 'btn-add-tp': '+ Участник',
+        'lbl-per-person': 'На каждого:', 'lbl-ppl-count': 'КОЛИЧЕСТВО ЧЕЛОВЕК', 'btn-share': 'Поделиться',
+        'lbl-rent-total': 'АРЕНДА + КОММУНАЛКА', 'lbl-per-rent': 'С человека:', 
+        'lbl-trip-name': 'НАЗВАНИЕ ПОЕЗДКИ', 'btn-add-ex': '+ Расход', 
         'lbl-trip-res': 'Итого с каждого:', 'btn-share-trip': 'Поделиться итогами', 'vault-title': 'СЕЙФ ЧЕКОВ'
     },
     EN: {
         'tab-cafe': 'Cafe', 'tab-rent': 'Rent', 'tab-travel': 'Travel',
         'lbl-total': 'TOTAL AMOUNT', 'lbl-curr': 'CURRENCY', 'lbl-service': 'SERVICE 10%',
-        'lbl-per-person': 'Per person:', 'btn-add-p': '+ Person', 'btn-share': 'Share',
-        'lbl-rent-total': 'RENT + UTILITIES', 'lbl-per-rent': 'Per person:', 'btn-add-r': '+ Tenant',
-        'lbl-trip-name': 'TRIP NAME', 'btn-add-ex': '+ Expense (Lunch, Taxi...)', 'btn-add-tp': '+ Participant',
+        'lbl-per-person': 'Per person:', 'lbl-ppl-count': 'NUMBER OF PEOPLE', 'btn-share': 'Share',
+        'lbl-rent-total': 'RENT + UTILITIES', 'lbl-per-rent': 'Per person:', 
+        'lbl-trip-name': 'TRIP NAME', 'btn-add-ex': '+ Expense', 
         'lbl-trip-res': 'Total per person:', 'btn-share-trip': 'Share Results', 'vault-title': 'CHECK VAULT'
     }
 };
 
-const rates = { KZT: 1, USD: 0.0022, EUR: 0.0021, RUB: 0.21 }; // Относительно KZT
+const rates = { KZT: 1, USD: 0.0022, EUR: 0.0021, RUB: 0.21 };
 
 function initApp() {
-    tg.ready();
-    tg.expand();
-    changeLang();
-    renderVault();
-    calculateAll();
+    tg.ready(); tg.expand();
+    changeLang(); renderVault(); calculateAll();
 }
 
 function openTab(tabId) {
@@ -46,21 +43,20 @@ function changeLang() {
     });
 }
 
-function addPerson(containerId, type) {
-    const div = document.createElement('div');
-    div.className = 'participant-row';
-    div.innerHTML = `<input type="text" placeholder="..." class="p-input" style="margin-bottom:8px; width:100%; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 12px; color: white;">`;
-    document.getElementById(containerId).appendChild(div);
+// ФУНКЦИЯ ШАГА (Плюс/Минус человек)
+function step(type, val) {
+    const input = document.getElementById('count' + type.charAt(0).toUpperCase() + type.slice(1));
+    let current = parseInt(input.value) || 1;
+    current += val;
+    if (current < 1) current = 1;
+    input.value = current;
     calculateAll();
 }
 
 function addExpense() {
     const div = document.createElement('div');
     div.className = 'expense-row';
-    div.style.background = '#0f172a';
-    div.style.padding = '10px';
-    div.style.borderRadius = '12px';
-    div.style.marginBottom = '10px';
+    div.style.background = '#0f172a'; div.style.padding = '10px'; div.style.borderRadius = '12px'; div.style.marginBottom = '10px';
     div.innerHTML = `
         <input type="text" class="t-exp-desc" placeholder="На что?" style="margin-bottom:5px; font-size:12px; width:100%; background:none; border:none; color:var(--hint); outline:none;">
         <div class="settings-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
@@ -78,24 +74,19 @@ function calculateAll() {
     const base = document.getElementById('baseCurr').value;
     const signs = { KZT: '₸', USD: '$', EUR: '€', RUB: '₽' };
     const baseSign = signs[base];
-    
-    const toBase = (amt, from) => {
-        if (from === base) return amt;
-        const inKZT = amt / rates[from];
-        return inKZT * rates[base];
-    };
+    const toBase = (amt, from) => (from === base) ? amt : (amt / rates[from]) * rates[base];
 
     // Кафе
     let cAmt = parseFloat(document.getElementById('totalAmount').value) || 0;
     if (document.getElementById('serviceTax').checked) cAmt *= 1.1;
     let cBase = toBase(cAmt, document.getElementById('currencySelect').value);
-    let cCount = document.getElementById('participantsList').children.length;
-    document.getElementById('valCafe').innerText = (cCount > 0 ? (cBase / cCount).toFixed(2) : "0") + " " + baseSign;
+    let cCount = parseInt(document.getElementById('countCafe').value) || 1;
+    document.getElementById('valCafe').innerText = (cBase / cCount).toFixed(2) + " " + baseSign;
 
     // Аренда
     let rAmt = parseFloat(document.getElementById('rentTotal').value) || 0;
-    let rCount = document.getElementById('rentParticipants').children.length;
-    document.getElementById('valRent').innerText = (rCount > 0 ? (toBase(rAmt, "KZT") / rCount).toFixed(2) : "0") + " " + baseSign;
+    let rCount = parseInt(document.getElementById('countRent').value) || 1;
+    document.getElementById('valRent').innerText = (toBase(rAmt, "KZT") / rCount).toFixed(2) + " " + baseSign;
 
     // Поездка
     let tTotalBase = 0;
@@ -104,21 +95,17 @@ function calculateAll() {
         let c = row.querySelector('.t-exp-cur').value;
         tTotalBase += toBase(v, c);
     });
-    let tCount = document.getElementById('travelParticipants').children.length;
-    document.getElementById('valTravel').innerText = (tCount > 0 ? (tTotalBase / tCount).toFixed(2) : "0") + " " + baseSign;
+    let tCount = parseInt(document.getElementById('countTravel').value) || 1;
+    document.getElementById('valTravel').innerText = (tTotalBase / tCount).toFixed(2) + " " + baseSign;
 }
 
-// УНИВЕРСАЛЬНАЯ КАМЕРА
 function triggerCamera() {
-    // Если мы в Telegram Mini App, используем его сканер
     if (tg.initData) {
-        tg.showScanQrPopup({ text: "Сфотографируйте чек" }, (text) => {
+        tg.showScanQrPopup({ text: "Сфотографируйте чек" }, () => {
             document.getElementById('totalAmount').value = 19645;
-            calculateAll();
-            return true;
+            calculateAll(); return true;
         });
     }
-    // Если PWA/Браузер - сработает стандартный input file (через label в HTML)
 }
 
 function handlePhoto(event) {
@@ -127,14 +114,14 @@ function handlePhoto(event) {
         btn.innerText = "⏳";
         setTimeout(() => {
             document.getElementById('totalAmount').value = 19645;
-            calculateAll();
-            btn.innerText = "📷";
+            calculateAll(); btn.innerText = "📷";
         }, 1200);
     }
 }
 
 function share(type) {
     const val = document.getElementById('val' + type.charAt(0).toUpperCase() + type.slice(1)).innerText;
+    const count = document.getElementById('count' + type.charAt(0).toUpperCase() + type.slice(1)).value;
     let details = "";
     if(type === 'travel') {
         document.querySelectorAll('.expense-row').forEach(row => {
@@ -144,7 +131,7 @@ function share(type) {
             if(v) details += `\n• ${d}: ${v}${c}`;
         });
     }
-    const text = `💸 Расчет: ${val}${details}\n\n@MyCoolSplitBot`;
+    const text = `💸 Расчет: ${val}\n👥 Человек: ${count}${details}\n\n@MyCoolSplitBot`;
     saveToVault(type, val, details);
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
 }
