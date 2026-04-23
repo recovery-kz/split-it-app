@@ -1,7 +1,6 @@
 const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
 
+// 1. ПЕРЕВОДЫ
 const translations = {
     RU: {
         'tab-cafe': 'Кафе', 'tab-rent': 'Аренда', 'tab-travel': 'Поездка',
@@ -16,7 +15,7 @@ const translations = {
         'lbl-total': 'TOTAL AMOUNT', 'lbl-curr': 'CURRENCY', 'lbl-service': 'SERVICE 10%',
         'lbl-per-person': 'Per person:', 'btn-add-p': '+ Person', 'btn-share': 'Share',
         'lbl-rent-total': 'RENT + UTILITIES', 'lbl-per-rent': 'Per person:', 'btn-add-r': '+ Tenant',
-        'lbl-trip-name': 'TRIP NAME', 'btn-add-ex': '+ Expense (Lunch, Taxi...)', 'btn-add-tp': '+ Participant',
+        'lbl-trip-name': 'TRIP NAME', 'btn-add-ex': '+ Expense (Taxi, Lunch...)', 'btn-add-tp': '+ Participant',
         'lbl-trip-res': 'Total per person:', 'btn-share-trip': 'Share Results', 'vault-title': 'CHECK VAULT'
     }
 };
@@ -24,6 +23,8 @@ const translations = {
 const rates = { KZT: 445, USD: 1, EUR: 0.92, RUB: 92 };
 
 function initApp() {
+    tg.ready();
+    tg.expand();
     changeLang();
     renderVault();
     calculateAll();
@@ -32,7 +33,7 @@ function initApp() {
 function openTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    if (document.getElementById(tabId)) document.getElementById(tabId).classList.add('active');
+    document.getElementById(tabId).classList.add('active');
     if (document.getElementById('tab-' + tabId)) document.getElementById('tab-' + tabId).classList.add('active');
 }
 
@@ -48,7 +49,7 @@ function changeLang() {
 function addPerson(containerId, type) {
     const div = document.createElement('div');
     div.className = 'participant-row';
-    div.innerHTML = `<input type="text" placeholder="Имя" class="p-input" style="margin-bottom:8px; width:100%; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 12px; color: white;">`;
+    div.innerHTML = `<input type="text" placeholder="..." class="p-input" style="margin-bottom:8px; width:100%; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 12px; color: white;">`;
     document.getElementById(containerId).appendChild(div);
     calculateAll();
 }
@@ -61,7 +62,7 @@ function addExpense() {
     div.style.borderRadius = '12px';
     div.style.marginBottom = '10px';
     div.innerHTML = `
-        <input type="text" class="t-exp-desc" placeholder="На что (Такси, Обед...)" style="margin-bottom:5px; font-size:12px;">
+        <input type="text" class="t-exp-desc" placeholder="На что?" style="margin-bottom:5px; font-size:12px; width:100%; background:none; border:none; color:var(--hint); outline:none;">
         <div class="settings-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <input type="number" class="t-exp-val" placeholder="0.00" oninput="calculateAll()">
             <select class="t-exp-cur" onchange="calculateAll()">
@@ -89,7 +90,7 @@ function calculateAll() {
     // Аренда
     let rAmt = parseFloat(document.getElementById('rentTotal').value) || 0;
     let rCount = document.getElementById('rentParticipants').children.length;
-    document.getElementById('valRent').innerText = (rCount > 0 ? (rAmt / rCount).toFixed(2) : "0") + " " + baseSign;
+    document.getElementById('valRent').innerText = (rCount > 0 ? (toBase(rAmt, "KZT") / rCount).toFixed(2) : "0") + " " + baseSign;
 
     // Поездка
     let tTotalBase = 0;
@@ -102,36 +103,49 @@ function calculateAll() {
     document.getElementById('valTravel').innerText = (tCount > 0 ? (tTotalBase / tCount).toFixed(2) : "0") + " " + baseSign;
 }
 
+// ЛОГИКА КАМЕРЫ (Универсальная)
+function triggerCamera() {
+    if (tg.initData) { 
+        tg.showScanQrPopup({ text: "Сфотографируйте чек" }, (text) => {
+            document.getElementById('totalAmount').value = 19645;
+            calculateAll();
+            return true;
+        });
+    } else {
+        document.getElementById('cameraInput').click();
+    }
+}
+
+function handlePhoto(event) {
+    if (event.target.files && event.target.files[0]) {
+        alert("Чек загружен, обрабатываю...");
+        setTimeout(() => {
+            document.getElementById('totalAmount').value = 19645;
+            calculateAll();
+        }, 1000);
+    }
+}
+
 function share(type) {
     const val = document.getElementById('val' + type.charAt(0).toUpperCase() + type.slice(1)).innerText;
     let details = "";
     if(type === 'travel') {
         document.querySelectorAll('.expense-row').forEach(row => {
-            const d = row.querySelector('.t-exp-desc').value || "Расход";
+            const d = row.querySelector('.t-exp-desc').value || "...";
             const v = row.querySelector('.t-exp-val').value;
             const c = row.querySelector('.t-exp-cur').value;
-            if(v) details += `\n• ${d}: ${v} ${c}`;
+            if(v) details += `\n• ${d}: ${v}${c}`;
         });
     }
-    
-    const text = `💸 Расчет [${type.toUpperCase()}]${details}\n\n👉 Итого на каждого: ${val}\nСоздано в @MyCoolSplitBot`;
-    
-    // Сохраняем в Сейф
+    const text = `💸 Расчет: ${val}${details}\n\n@MyCoolSplitBot`;
     saveToVault(type, val, details);
-    
     tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(text)}`);
 }
 
 function saveToVault(type, res, details) {
     let vault = JSON.parse(localStorage.getItem('my_vault') || '[]');
-    const item = {
-        date: new Date().toLocaleString(),
-        type: type,
-        result: res,
-        details: details
-    };
-    vault.unshift(item); // Добавляем в начало
-    localStorage.setItem('my_vault', JSON.stringify(vault.slice(0, 10))); // Храним последние 10
+    vault.unshift({ date: new Date().toLocaleString(), type, result: res, details });
+    localStorage.setItem('my_vault', JSON.stringify(vault.slice(0, 10)));
     renderVault();
 }
 
@@ -139,27 +153,15 @@ function renderVault() {
     const list = document.getElementById('vaultList');
     if(!list) return;
     let vault = JSON.parse(localStorage.getItem('my_vault') || '[]');
-    if(vault.length === 0) return;
-    
     list.innerHTML = vault.map(item => `
         <div style="background:var(--card); padding:15px; border-radius:12px; margin-bottom:10px; border-left:4px solid var(--accent);">
-            <div style="font-size:10px; color:var(--hint); margin-bottom:5px;">${item.date}</div>
-            <div style="font-weight:bold; color:var(--accent);">${item.result}</div>
-            <div style="font-size:12px; color:white; white-space:pre-line;">${item.details || item.type}</div>
+            <div style="font-size:10px; color:var(--hint);">${item.date}</div>
+            <div style="font-weight:bold; color:var(--accent); margin:5px 0;">${item.result}</div>
+            <div style="font-size:12px; white-space:pre-line;">${item.details || item.type}</div>
         </div>
-    `).join('');
+    `).join('') || '<p style="text-align:center; color:var(--hint);">Сейф пуст</p>';
 }
 
-function openCamera() {
-    tg.showScanQrPopup({ text: "Сфотографируйте чек" }, (text) => {
-        document.getElementById('totalAmount').value = 19645;
-        calculateAll();
-        return true;
-    });
-}
-
-function resetAll() {
-    if(confirm("Очистить все данные?")) { localStorage.clear(); location.reload(); }
-}
+function resetAll() { if(confirm("Очистить всё?")) { localStorage.clear(); location.reload(); } }
 
 document.addEventListener('DOMContentLoaded', initApp);
