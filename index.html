@@ -1,37 +1,21 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>SplitIt - Делим чек</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="app">
-        <h1>Разделить счет</h1>
-        
-        <div class="input-group">
-            <label>Общая сумма</label>
-            <input type="number" id="totalAmount" placeholder="0.00" inputmode="decimal">
-        </div>
+<div class="tabs">
+    <button class="tab-btn active" onclick="openTab('cafe')">Кафе</button>
+    <button class="tab-btn" onclick="openTab('travel')">Поездка/Аренда</button>
+</div>
 
-        <div class="participants-section">
-            <label>Участники</label>
-            <div id="participantsList">
-                </div>
-            <button id="addPersonBtn" class="secondary-btn">+ Добавить человека</button>
-        </div>
-
-        <div class="result-section" id="resultArea" style="display: none;">
-            <hr>
-            <div class="result-row">
-                <span>Итого на каждого:</span>
-                <span id="perPersonAmount">0.00</span>
-            </div>
-            <button id="shareBtn" class="main-btn">Поделиться результатом</button>
-        </div>
+<div id="cafe" class="tab-content active">
     </div>
-    <script src="script.js"></script>
-</body>
-</html>
+
+<div id="travel" class="tab-content">
+    <div class="input-group">
+        <label>Название поездки/группы</label>
+        <input type="text" id="tripName" placeholder="Напр: Грузия 2024">
+    </div>
+    <div id="expensesList">
+        </div>
+    <button id="addExpenseBtn" class="secondary-btn">+ Добавить расход</button>
+    <div class="result-card" id="travelResult" style="display:none;">
+        <span>Итого с каждого:</span>
+        <span id="travelPerPerson" class="result-val">0 ₸</span>
+    </div>
+</div>
