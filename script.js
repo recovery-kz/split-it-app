@@ -43,14 +43,18 @@ function changeLang() {
     });
 }
 
-// ФУНКЦИЯ ШАГА (Плюс/Минус человек)
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ КНОПОК +-
 function step(type, val) {
-    const input = document.getElementById('count' + type.charAt(0).toUpperCase() + type.slice(1));
-    let current = parseInt(input.value) || 1;
-    current += val;
-    if (current < 1) current = 1;
-    input.value = current;
-    calculateAll();
+    // Находим инпут по ID, например: countCafe, countRent, countTravel
+    const inputId = 'count' + type.charAt(0).toUpperCase() + type.slice(1);
+    const input = document.getElementById(inputId);
+    if (input) {
+        let current = parseInt(input.value) || 1;
+        current += val;
+        if (current < 1) current = 1;
+        input.value = current;
+        calculateAll(); // Важно: сразу вызываем расчет
+    }
 }
 
 function addExpense() {
@@ -76,19 +80,19 @@ function calculateAll() {
     const baseSign = signs[base];
     const toBase = (amt, from) => (from === base) ? amt : (amt / rates[from]) * rates[base];
 
-    // Кафе
+    // 1. Кафе
     let cAmt = parseFloat(document.getElementById('totalAmount').value) || 0;
     if (document.getElementById('serviceTax').checked) cAmt *= 1.1;
     let cBase = toBase(cAmt, document.getElementById('currencySelect').value);
     let cCount = parseInt(document.getElementById('countCafe').value) || 1;
     document.getElementById('valCafe').innerText = (cBase / cCount).toFixed(2) + " " + baseSign;
 
-    // Аренда
+    // 2. Аренда
     let rAmt = parseFloat(document.getElementById('rentTotal').value) || 0;
     let rCount = parseInt(document.getElementById('countRent').value) || 1;
     document.getElementById('valRent').innerText = (toBase(rAmt, "KZT") / rCount).toFixed(2) + " " + baseSign;
 
-    // Поездка
+    // 3. Поездка
     let tTotalBase = 0;
     document.querySelectorAll('.expense-row').forEach(row => {
         let v = parseFloat(row.querySelector('.t-exp-val').value) || 0;
@@ -121,7 +125,8 @@ function handlePhoto(event) {
 
 function share(type) {
     const val = document.getElementById('val' + type.charAt(0).toUpperCase() + type.slice(1)).innerText;
-    const count = document.getElementById('count' + type.charAt(0).toUpperCase() + type.slice(1)).value;
+    const countInput = document.getElementById('count' + type.charAt(0).toUpperCase() + type.slice(1));
+    const count = countInput ? countInput.value : 1;
     let details = "";
     if(type === 'travel') {
         document.querySelectorAll('.expense-row').forEach(row => {
