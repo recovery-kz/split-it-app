@@ -1,258 +1,69 @@
 :root {
-    --bg: #0f172a;           /* Глубокий темно-синий */
-    --card: #1e293b;         /* Карточки */
-    --accent: #fbbf24;       /* Золотой песок */
-    --text: #f8fafc;         /* Основной текст */
-    --hint: #94a3b8;         /* Подписи */
-    --border: #334155;       /* Линии */
+    --bg: #0f172a;
+    --card: #1e293b;
+    --accent: #fbbf24;
+    --text: #f8fafc;
+    --hint: #94a3b8;
+    --border: #334155;
 }
 
-/* ОБЩИЕ СТИЛИ */
 body {
     background-color: var(--bg);
     color: var(--text);
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
-    margin: 0;
-    padding: 15px;
-    display: flex;
-    justify-content: center;
+    font-family: 'Inter', -apple-system, sans-serif;
+    margin: 0; padding: 15px;
+    display: flex; justify-content: center;
     -webkit-tap-highlight-color: transparent;
-    padding-top: env(safe-area-inset-top); /* Для iPhone с челкой */
+    padding-top: env(safe-area-inset-top);
 }
 
-#app {
-    width: 100%;
-    max-width: 400px;
-    padding-bottom: 50px;
-}
+#app { width: 100%; max-width: 400px; padding-bottom: 50px; }
 
-/* ВЕРХНЯЯ ПАНЕЛЬ */
-.top-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-
+.top-bar { display: flex; gap: 8px; margin-bottom: 20px; }
 .top-bar select, .icon-btn {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: white;
-    padding: 10px;
-    border-radius: 12px;
-    font-size: 14px;
-    outline: none;
-    cursor: pointer;
+    background: var(--card); border: 1px solid var(--border);
+    color: white; padding: 10px; border-radius: 12px; font-size: 14px; outline: none; cursor: pointer;
 }
 
-.icon-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 45px;
+.tabs { display: flex; background: #1e293b; padding: 4px; border-radius: 14px; margin-bottom: 25px; border: 1px solid var(--border); }
+.tab-btn { flex: 1; border: none; padding: 12px; border-radius: 10px; background: none; color: var(--hint); font-weight: 600; font-size: 14px; cursor: pointer; }
+.tab-btn.active { background: var(--accent); color: var(--bg); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.4s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--hint); margin-bottom: 8px; display: block; padding-left: 4px; }
+.input-with-icon { position: relative; margin-bottom: 20px; }
+input, select { width: 100%; background: var(--card); border: 1px solid var(--border); padding: 16px; border-radius: 14px; color: white; font-size: 17px; box-sizing: border-box; outline: none; }
+
+.cam-btn { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: var(--accent); border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 18px; z-index: 10; }
+
+/* СТИЛИ СЧЕТЧИКА */
+.counter-box {
+    display: flex; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 5px; margin-bottom: 20px;
+}
+.counter-box button {
+    width: 50px; height: 50px; border: none; background: #334155; color: white; font-size: 24px; border-radius: 10px; cursor: pointer; transition: 0.2s;
+}
+.counter-box button:active { background: var(--accent); color: var(--bg); }
+.counter-box input {
+    flex: 1; text-align: center; background: none; border: none; font-size: 22px; font-weight: 800; color: var(--accent);
 }
 
-/* ТАБЫ */
-.tabs {
-    display: flex;
-    background: #1e293b;
-    padding: 4px;
-    border-radius: 14px;
-    margin-bottom: 25px;
-    border: 1px solid var(--border);
-}
+.settings-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 15px; margin-bottom: 25px; }
+.secondary-btn { width: 100%; padding: 14px; background: none; border: 1px dashed var(--accent); color: var(--accent); border-radius: 14px; font-weight: 600; cursor: pointer; margin-bottom: 20px; }
+.main-btn { width: 100%; padding: 18px; background: var(--accent); color: var(--bg); border: none; border-radius: 16px; font-weight: 800; font-size: 16px; cursor: pointer; }
 
-.tab-btn {
-    flex: 1;
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    background: none;
-    color: var(--hint);
-    font-weight: 600;
-    font-size: 14px;
-    cursor: pointer;
-    transition: 0.3s ease;
-}
+.result-card { background: rgba(30, 41, 59, 0.5); border: 1px solid var(--border); padding: 24px; border-radius: 24px; margin-top: 15px; }
+.res-line { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.result-val { font-size: 26px; font-weight: 800; color: var(--accent); }
 
-.tab-btn.active {
-    background: var(--accent);
-    color: var(--bg);
-}
-
-/* КОНТЕНТ */
-.tab-content {
-    display: none;
-}
-
-.tab-content.active {
-    display: block;
-    animation: fadeIn 0.4s ease;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* ПОЛЯ ВВОДА */
-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--hint);
-    margin-bottom: 8px;
-    display: block;
-    padding-left: 4px;
-}
-
-.input-with-icon {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-input, select {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 16px;
-    border-radius: 14px;
-    color: white;
-    font-size: 17px;
-    box-sizing: border-box;
-    outline: none;
-    transition: 0.2s;
-}
-
-input:focus {
-    border-color: var(--accent);
-}
-
-/* КНОПКА КАМЕРЫ (ФИНАЛЬНЫЕ ШТРИХИ) */
-.cam-btn {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: var(--accent);
-    border: none;
-    padding: 10px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10; /* Чтобы всегда была сверху */
-}
-
-/* УБИРАЕМ СТРЕЛКИ В INPUT NUMBER */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-input[type="number"] {
-    -moz-appearance: textfield;
-}
-
-/* СЕТКА НАСТРОЕК */
-.settings-grid {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-/* КНОПКИ */
-.secondary-btn {
-    width: 100%;
-    padding: 14px;
-    background: none;
-    border: 1px dashed var(--accent);
-    color: var(--accent);
-    border-radius: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 20px;
-}
-
-.main-btn {
-    width: 100%;
-    padding: 18px;
-    background: var(--accent);
-    color: var(--bg);
-    border: none;
-    border-radius: 16px;
-    font-weight: 800;
-    font-size: 16px;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.2);
-}
-
-.main-btn:active {
-    transform: scale(0.98);
-}
-
-/* КАРТОЧКА РЕЗУЛЬТАТА */
-.result-card {
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid var(--border);
-    padding: 24px;
-    border-radius: 24px;
-    margin-top: 15px;
-}
-
-.res-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.result-val {
-    font-size: 26px;
-    font-weight: 800;
-    color: var(--accent);
-}
-
-/* СВИТЧ */
-.switch {
-    position: relative;
-    display: inline-block;
-    width: 48px;
-    height: 26px;
-}
-
-.switch input { opacity: 0; width: 0; height: 0; }
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #334155;
-    transition: .4s;
-    border-radius: 34px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 20px; width: 20px;
-    left: 3px; bottom: 3px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-}
-
+.switch { position: relative; display: inline-block; width: 48px; height: 26px; }
+.switch input { opacity: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
 input:checked + .slider { background-color: #34c759; }
 input:checked + .slider:before { transform: translateX(22px); }
 
-/* ПРЕМИАЛЬНЫЙ СПИСОК В СЕЙФЕ */
-#vaultList div {
-    background: var(--card);
-    padding: 16px;
-    border-radius: 16px;
-    margin-bottom: 12px;
-    border-left: 4px solid var(--accent);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
+#vaultList div { background: var(--card); padding: 16px; border-radius: 16px; margin-bottom: 12px; border-left: 4px solid var(--accent); }
