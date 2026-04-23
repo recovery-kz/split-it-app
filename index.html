@@ -2,15 +2,21 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Split It Premium</title>
     
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="apple-touch-icon" href="icon.png">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
+
+    <link rel="apple-touch-icon" href="icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Split It">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="application-name" content="Split It">
+    <meta name="msapplication-navbutton-color" content="#0f172a">
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -42,9 +48,10 @@
             <label data-i18n="lbl-total">СУММА СЧЕТА</label>
             <div class="input-with-icon">
                 <input type="number" id="totalAmount" placeholder="0.00" inputmode="decimal" oninput="calculateAll()">
-                <button class="cam-btn" onclick="triggerCamera()">📷</button>
-                <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display: none;" onchange="handlePhoto(event)">
+                <label for="cameraInput" class="cam-btn" onclick="triggerCamera()">📷</label>
+                <input type="file" id="cameraInput" accept="image/*" capture="camera" style="position:absolute; width:1px; height:1px; opacity:0; z-index:-1;" onchange="handlePhoto(event)">
             </div>
+            
             <div class="settings-grid">
                 <div>
                     <label data-i18n="lbl-curr">ВАЛЮТА</label>
