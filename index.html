@@ -4,20 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Split It Premium</title>
-    
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="manifest" href="manifest.json">
-
     <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Split It">
-
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0f172a">
-    <meta name="application-name" content="Split It">
-    <meta name="msapplication-navbutton-color" content="#0f172a">
-
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -56,28 +48,25 @@
                 <div>
                     <label data-i18n="lbl-curr">ВАЛЮТА</label>
                     <select id="currencySelect" onchange="calculateAll()">
-                        <option value="KZT">₸</option>
-                        <option value="USD">$</option>
-                        <option value="EUR">€</option>
-                        <option value="RUB">₽</option>
+                        <option value="KZT">₸</option><option value="USD">$</option>
+                        <option value="EUR">€</option><option value="RUB">₽</option>
                     </select>
                 </div>
                 <div>
                     <label data-i18n="lbl-service">СЕРВИС 10%</label>
-                    <label class="switch">
-                        <input type="checkbox" id="serviceTax" onchange="calculateAll()">
-                        <span class="slider"></span>
-                    </label>
+                    <label class="switch"><input type="checkbox" id="serviceTax" onchange="calculateAll()"><span class="slider"></span></label>
                 </div>
             </div>
-            <div id="participantsList"></div>
-            <button class="secondary-btn" onclick="addPerson('participantsList', 'cafe')" data-i18n="btn-add-p">+ Человек</button>
-            
+
+            <label data-i18n="lbl-ppl-count">КОЛИЧЕСТВО ЧЕЛОВЕК</label>
+            <div class="counter-box">
+                <button onclick="step('cafe', -1)">−</button>
+                <input type="number" id="countCafe" value="1" oninput="calculateAll()">
+                <button onclick="step('cafe', 1)">+</button>
+            </div>
+
             <div class="result-card">
-                <div class="res-line">
-                    <span data-i18n="lbl-per-person">На каждого:</span>
-                    <span class="result-val" id="valCafe">0 ₸</span>
-                </div>
+                <div class="res-line"><span data-i18n="lbl-per-person">На каждого:</span><span class="result-val" id="valCafe">0 ₸</span></div>
                 <button class="main-btn" onclick="share('cafe')" data-i18n="btn-share">Поделиться</button>
             </div>
         </div>
@@ -85,29 +74,35 @@
         <div id="rent" class="tab-content">
             <label data-i18n="lbl-rent-total">АРЕНДА + КОММУНАЛКА</label>
             <input type="number" id="rentTotal" placeholder="0.00" oninput="calculateAll()">
-            <div id="rentParticipants"></div>
-            <button class="secondary-btn" onclick="addPerson('rentParticipants', 'rent')" data-i18n="btn-add-r">+ Жилец</button>
+            
+            <label data-i18n="lbl-ppl-count" style="margin-top:20px;">КОЛИЧЕСТВО ЖИЛЬЦОВ</label>
+            <div class="counter-box">
+                <button onclick="step('rent', -1)">−</button>
+                <input type="number" id="countRent" value="1" oninput="calculateAll()">
+                <button onclick="step('rent', 1)">+</button>
+            </div>
+
             <div class="result-card">
-                <div class="res-line">
-                    <span data-i18n="lbl-per-rent">С человека:</span>
-                    <span class="result-val" id="valRent">0 ₸</span>
-                </div>
+                <div class="res-line"><span data-i18n="lbl-per-rent">С человека:</span><span class="result-val" id="valRent">0 ₸</span></div>
                 <button class="main-btn" onclick="share('rent')" data-i18n="btn-share">Поделиться</button>
             </div>
         </div>
 
         <div id="travel" class="tab-content">
             <label data-i18n="lbl-trip-name">НАЗВАНИЕ ПОЕЗДКИ</label>
-            <input type="text" id="tripName" placeholder="..." oninput="calculateAll()">
+            <input type="text" id="tripName" placeholder="...">
             <div id="travelExpenses"></div>
             <button class="secondary-btn" onclick="addExpense()" data-i18n="btn-add-ex">+ Расход</button>
-            <div id="travelParticipants"></div>
-            <button class="secondary-btn" onclick="addPerson('travelParticipants', 'travel')" data-i18n="btn-add-tp">+ Участник</button>
+            
+            <label data-i18n="lbl-ppl-count">КТО ДЕЛИТ (ЧЕЛОВЕК)</label>
+            <div class="counter-box">
+                <button onclick="step('travel', -1)">−</button>
+                <input type="number" id="countTravel" value="1" oninput="calculateAll()">
+                <button onclick="step('travel', 1)">+</button>
+            </div>
+
             <div class="result-card">
-                <div class="res-line">
-                    <span data-i18n="lbl-trip-res">Итого с каждого:</span>
-                    <span class="result-val" id="valTravel">0 ₸</span>
-                </div>
+                <div class="res-line"><span data-i18n="lbl-trip-res">Итого с каждого:</span><span class="result-val" id="valTravel">0 ₸</span></div>
                 <button class="main-btn" onclick="share('travel')" data-i18n="btn-share-trip">Поделиться итогами</button>
             </div>
         </div>
