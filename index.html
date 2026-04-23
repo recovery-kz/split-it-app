@@ -42,7 +42,8 @@
             <label data-i18n="lbl-total">СУММА СЧЕТА</label>
             <div class="input-with-icon">
                 <input type="number" id="totalAmount" placeholder="0.00" inputmode="decimal" oninput="calculateAll()">
-                <button class="cam-btn" onclick="openCamera()">📷</button>
+                <button class="cam-btn" onclick="triggerCamera()">📷</button>
+                <input type="file" id="cameraInput" accept="image/*" capture="camera" style="display: none;" onchange="handlePhoto(event)">
             </div>
             <div class="settings-grid">
                 <div>
@@ -79,7 +80,6 @@
             <input type="number" id="rentTotal" placeholder="0.00" oninput="calculateAll()">
             <div id="rentParticipants"></div>
             <button class="secondary-btn" onclick="addPerson('rentParticipants', 'rent')" data-i18n="btn-add-r">+ Жилец</button>
-            
             <div class="result-card">
                 <div class="res-line">
                     <span data-i18n="lbl-per-rent">С человека:</span>
@@ -93,10 +93,9 @@
             <label data-i18n="lbl-trip-name">НАЗВАНИЕ ПОЕЗДКИ</label>
             <input type="text" id="tripName" placeholder="..." oninput="calculateAll()">
             <div id="travelExpenses"></div>
-            <button class="secondary-btn" onclick="addExpense()" data-i18n="btn-add-ex">+ Расход (Обед, Такси...)</button>
+            <button class="secondary-btn" onclick="addExpense()" data-i18n="btn-add-ex">+ Расход</button>
             <div id="travelParticipants"></div>
             <button class="secondary-btn" onclick="addPerson('travelParticipants', 'travel')" data-i18n="btn-add-tp">+ Участник</button>
-            
             <div class="result-card">
                 <div class="res-line">
                     <span data-i18n="lbl-trip-res">Итого с каждого:</span>
@@ -108,9 +107,7 @@
 
         <div id="vault" class="tab-content">
             <h2 style="color:var(--accent); font-size:18px; margin-bottom:15px;" data-i18n="vault-title">СЕЙФ ЧЕКОВ</h2>
-            <div id="vaultList">
-                <p style="color:var(--hint); text-align:center; font-size:14px;">Здесь будут ваши сохраненные расчеты</p>
-            </div>
+            <div id="vaultList"></div>
             <button class="secondary-btn" style="margin-top:20px;" onclick="openTab('cafe')">← Назад</button>
         </div>
     </div>
