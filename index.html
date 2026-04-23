@@ -20,6 +20,7 @@
                 <option value="EUR">Base: €</option>
                 <option value="RUB">Base: ₽</option>
             </select>
+            <button class="icon-btn" onclick="openTab('vault')">📁</button>
             <button class="icon-btn" onclick="resetAll()">🔄</button>
         </div>
 
@@ -35,34 +36,21 @@
                 <input type="number" id="totalAmount" placeholder="0.00" inputmode="decimal" oninput="calculateAll()">
                 <button class="cam-btn" onclick="openCamera()">📷</button>
             </div>
-
             <div class="settings-grid">
-                <div>
-                    <label data-i18n="lbl-curr">ВАЛЮТА ЧЕКА</label>
+                <div><label data-i18n="lbl-curr">ВАЛЮТА</label>
                     <select id="currencySelect" onchange="calculateAll()">
-                        <option value="KZT">₸ (KZT)</option>
-                        <option value="USD">$ (USD)</option>
-                        <option value="EUR">€ (EUR)</option>
-                        <option value="RUB">₽ (RUB)</option>
+                        <option value="KZT">₸</option><option value="USD">$</option>
+                        <option value="EUR">€</option><option value="RUB">₽</option>
                     </select>
                 </div>
-                <div>
-                    <label data-i18n="lbl-service">СЕРВИС 10%</label>
-                    <label class="switch">
-                        <input type="checkbox" id="serviceTax" onchange="calculateAll()">
-                        <span class="slider"></span>
-                    </label>
+                <div><label data-i18n="lbl-service">СЕРВИС 10%</label>
+                    <label class="switch"><input type="checkbox" id="serviceTax" onchange="calculateAll()"><span class="slider"></span></label>
                 </div>
             </div>
-
             <div id="participantsList"></div>
             <button class="secondary-btn" onclick="addPerson('participantsList', 'cafe')" data-i18n="btn-add-p">+ Человек</button>
-
             <div class="result-card">
-                <div class="res-line">
-                    <span data-i18n="lbl-per-person">На каждого:</span>
-                    <span class="result-val" id="valCafe">0 ₸</span>
-                </div>
+                <div class="res-line"><span data-i18n="lbl-per-person">На каждого:</span><span class="result-val" id="valCafe">0 ₸</span></div>
                 <button class="main-btn" onclick="share('cafe')" data-i18n="btn-share">Поделиться</button>
             </div>
         </div>
@@ -70,15 +58,10 @@
         <div id="rent" class="tab-content">
             <label data-i18n="lbl-rent-total">АРЕНДА + КОММУНАЛКА</label>
             <input type="number" id="rentTotal" placeholder="0.00" oninput="calculateAll()">
-            
             <div id="rentParticipants"></div>
             <button class="secondary-btn" onclick="addPerson('rentParticipants', 'rent')" data-i18n="btn-add-r">+ Жилец</button>
-            
             <div class="result-card">
-                <div class="res-line">
-                    <span data-i18n="lbl-per-rent">С человека:</span>
-                    <span class="result-val" id="valRent">0 ₸</span>
-                </div>
+                <div class="res-line"><span data-i18n="lbl-per-rent">С человека:</span><span class="result-val" id="valRent">0 ₸</span></div>
                 <button class="main-btn" onclick="share('rent')" data-i18n="btn-share">Поделиться</button>
             </div>
         </div>
@@ -86,20 +69,22 @@
         <div id="travel" class="tab-content">
             <label data-i18n="lbl-trip-name">НАЗВАНИЕ ПОЕЗДКИ</label>
             <input type="text" id="tripName" placeholder="..." oninput="calculateAll()">
-            
             <div id="travelExpenses"></div>
-            <button class="secondary-btn" onclick="addExpense()" data-i18n="btn-add-ex">+ Расход</button>
-            
+            <button class="secondary-btn" onclick="addExpense()" data-i18n="btn-add-ex">+ Расход (Обед, Такси...)</button>
             <div id="travelParticipants"></div>
             <button class="secondary-btn" onclick="addPerson('travelParticipants', 'travel')" data-i18n="btn-add-tp">+ Участник</button>
-            
             <div class="result-card">
-                <div class="res-line">
-                    <span data-i18n="lbl-trip-res">Итого с каждого:</span>
-                    <span class="result-val" id="valTravel">0 ₸</span>
-                </div>
+                <div class="res-line"><span data-i18n="lbl-trip-res">Итого с каждого:</span><span class="result-val" id="valTravel">0 ₸</span></div>
                 <button class="main-btn" onclick="share('travel')" data-i18n="btn-share-trip">Поделиться итогами</button>
             </div>
+        </div>
+
+        <div id="vault" class="tab-content">
+            <h2 style="color:var(--accent); font-size:18px; margin-bottom:15px;" data-i18n="vault-title">СЕЙФ ЧЕКОВ</h2>
+            <div id="vaultList">
+                <p style="color:var(--hint); text-align:center; font-size:14px;">Здесь будут ваши сохраненные расчеты</p>
+            </div>
+            <button class="secondary-btn" style="margin-top:20px;" onclick="openTab('cafe')">← Назад</button>
         </div>
     </div>
     <script src="script.js"></script>
