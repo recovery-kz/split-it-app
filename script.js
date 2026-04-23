@@ -1,6 +1,5 @@
 const tg = window.Telegram.WebApp;
 
-// 1. ПЕРЕВОДЫ
 const translations = {
     RU: {
         'tab-cafe': 'Кафе', 'tab-rent': 'Аренда', 'tab-travel': 'Поездка',
@@ -15,12 +14,12 @@ const translations = {
         'lbl-total': 'TOTAL AMOUNT', 'lbl-curr': 'CURRENCY', 'lbl-service': 'SERVICE 10%',
         'lbl-per-person': 'Per person:', 'btn-add-p': '+ Person', 'btn-share': 'Share',
         'lbl-rent-total': 'RENT + UTILITIES', 'lbl-per-rent': 'Per person:', 'btn-add-r': '+ Tenant',
-        'lbl-trip-name': 'TRIP NAME', 'btn-add-ex': '+ Expense (Taxi, Lunch...)', 'btn-add-tp': '+ Participant',
+        'lbl-trip-name': 'TRIP NAME', 'btn-add-ex': '+ Expense (Lunch, Taxi...)', 'btn-add-tp': '+ Participant',
         'lbl-trip-res': 'Total per person:', 'btn-share-trip': 'Share Results', 'vault-title': 'CHECK VAULT'
     }
 };
 
-const rates = { KZT: 445, USD: 1, EUR: 0.92, RUB: 92 };
+const rates = { KZT: 1, USD: 0.0022, EUR: 0.0021, RUB: 0.21 }; // Относительно KZT
 
 function initApp() {
     tg.ready();
@@ -34,7 +33,8 @@ function openTab(tabId) {
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(tabId).classList.add('active');
-    if (document.getElementById('tab-' + tabId)) document.getElementById('tab-' + tabId).classList.add('active');
+    const btn = document.getElementById('tab-' + tabId);
+    if(btn) btn.classList.add('active');
 }
 
 function changeLang() {
@@ -78,7 +78,12 @@ function calculateAll() {
     const base = document.getElementById('baseCurr').value;
     const signs = { KZT: '₸', USD: '$', EUR: '€', RUB: '₽' };
     const baseSign = signs[base];
-    const toBase = (amt, from) => (from === base) ? amt : (amt / rates[from]) * rates[base];
+    
+    const toBase = (amt, from) => {
+        if (from === base) return amt;
+        const inKZT = amt / rates[from];
+        return inKZT * rates[base];
+    };
 
     // Кафе
     let cAmt = parseFloat(document.getElementById('totalAmount').value) || 0;
@@ -103,26 +108,28 @@ function calculateAll() {
     document.getElementById('valTravel').innerText = (tCount > 0 ? (tTotalBase / tCount).toFixed(2) : "0") + " " + baseSign;
 }
 
-// ЛОГИКА КАМЕРЫ (Универсальная)
+// УНИВЕРСАЛЬНАЯ КАМЕРА
 function triggerCamera() {
-    if (tg.initData) { 
+    // Если мы в Telegram Mini App, используем его сканер
+    if (tg.initData) {
         tg.showScanQrPopup({ text: "Сфотографируйте чек" }, (text) => {
             document.getElementById('totalAmount').value = 19645;
             calculateAll();
             return true;
         });
-    } else {
-        document.getElementById('cameraInput').click();
     }
+    // Если PWA/Браузер - сработает стандартный input file (через label в HTML)
 }
 
 function handlePhoto(event) {
     if (event.target.files && event.target.files[0]) {
-        alert("Чек загружен, обрабатываю...");
+        const btn = document.querySelector('.cam-btn');
+        btn.innerText = "⏳";
         setTimeout(() => {
             document.getElementById('totalAmount').value = 19645;
             calculateAll();
-        }, 1000);
+            btn.innerText = "📷";
+        }, 1200);
     }
 }
 
